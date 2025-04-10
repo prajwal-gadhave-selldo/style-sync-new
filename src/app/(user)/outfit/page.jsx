@@ -120,7 +120,6 @@ const OutfitPage = () => {
         <>
           <WeatherWidget weather={weather} />
           {renderClothingSuggestionForm()}
-          {/* <ClothingSuggestionForm weather={weather} clothes={clothes} /> */}
         </>
       )}
     </div>

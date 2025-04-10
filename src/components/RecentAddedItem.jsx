@@ -1,22 +1,19 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import LoadingSkeleton from "@/components/LoadingSkeleton";
+// components/RecentAddedItem.jsx
+import { useState, useEffect } from "react";
+import { useAtom } from "jotai";
+import { countAtom, decrementAtomCount } from "@/lib/atomStore";
+// import { decrementCount } from "@/lib/api";
+import { RxRotateCounterClockwise } from "react-icons/rx";
 import { FaTrashCan } from "react-icons/fa6";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-import { RxRotateCounterClockwise } from "react-icons/rx";
-import { decrementCount } from "@/lib/fetchWeatherData";
-import {useAtom} from 'jotai'
-import { countAtom,incrementAtomCount,decrementAtomCount } from "@/lib/atomStore";
-
+import LoadingSkeleton from "./LoadingSkeleton";
+import Image from "next/image";
 
 const RecentAddedItem = ({ data, loading, onDelete, email }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [items, setItems] = useState(data);
- const [count, setCount] = useAtom(countAtom);
- 
+  const [count, setCount] = useAtom(countAtom);
 
   useEffect(() => {
     setItems(data);
@@ -30,7 +27,7 @@ const RecentAddedItem = ({ data, loading, onDelete, email }) => {
       });
       if (response.ok) {
         onDelete(itemId);
-        await decrementCount(email);
+        await decrementAtomCount(email);
         setCount(count - 1);
       } else {
         console.error("Failed to delete the item");
@@ -50,14 +47,14 @@ const RecentAddedItem = ({ data, loading, onDelete, email }) => {
         body: JSON.stringify({ rotationDegree }),
       });
       if (response.ok) {
-        return true; 
+        return true;
       } else {
         console.error("Failed to update rotation degree");
         return false;
       }
     } catch (error) {
       console.error("Error updating rotation degree:", error);
-      return false; 
+      return false;
     }
   };
 
@@ -92,7 +89,7 @@ const RecentAddedItem = ({ data, loading, onDelete, email }) => {
 
   return (
     <>
-      <div className="w-full h-full justify-items-center grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-10  mt-5 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
         {loading
           ? Array(8)
               .fill()
@@ -100,62 +97,69 @@ const RecentAddedItem = ({ data, loading, onDelete, email }) => {
           : items.map((item) => (
               <div
                 key={`${item._id}-${item.rotationDegree}`}
-                className="border relative rounded-lg p-4 m-2 w-64 h-80 bg-primary-foreground hover:bg-muted-foreground hover:text-background hover:border-background transition-all duration-300 ease-in"
+                className="border border-gray-200 relative rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 ease-in"
               >
-                <button
-                  onClick={() => openDialog(item._id)}
-                  className="absolute top-2 right-2 p-2 z-[8] rounded-md  hover:bg-red-700 transition-all duration-300 ease-in"
-                >
-                  <FaTrashCan />
-                </button>
-                <div
-                  className={`w-full h-56 relative `}
-                  style={{ transform: `rotate(${item.rotationDegree}deg)` }}
-                >
+                <div className="absolute top-0 left-0 right-0 flex justify-between p-2 z-10">
+                  <button
+                    onClick={() => handleRotate(item)}
+                    className="p-2 rounded-full bg-white/80 hover:bg-white shadow-sm flex items-center gap-1 text-sm transition-all"
+                  >
+                    <RxRotateCounterClockwise />
+                    <span className="hidden md:group-hover:inline">Rotate</span>
+                  </button>
+
+                  <button
+                    onClick={() => openDialog(item._id)}
+                    className="p-2 rounded-full bg-white/80 hover:bg-red-100 text-gray-700 hover:text-red-700 shadow-sm transition-all"
+                  >
+                    <FaTrashCan />
+                  </button>
+                </div>
+
+                <div className="aspect-square w-full relative bg-gray-50">
                   <Image
                     src={item.photoUrl}
                     alt={item.category}
                     fill
                     unoptimized={true}
-                    className={`object-cover mb-2 `}
+                    className="object-cover"
+                    style={{ transform: `rotate(${item.rotationDegree}deg)` }}
                   />
                 </div>
-                <button
-                  onClick={() => handleRotate(item)}
-                  className="absolute bottom-16 right-2 p-2 z-[8] group hover:bg-slate-500 rounded-md transition-all duration-300 ease-in "
-                >
-                  <div className="flex items-center gap-2">
-                    <p className="md:hidden block  md:group-hover:block">
-                      Rotate
-                    </p>
-                    <RxRotateCounterClockwise className="font-bold" />
+
+                <div className="p-3">
+                  <div className="text-lg capitalize font-medium">
+                    {item.category}
                   </div>
-                </button>
-                <div className="text-xl capitalize">{item.category}</div>
-                <div className="text-base capitalize text-ring ">
-                  {item.colors.join(", ")}
+                  <div className="text-sm text-muted-foreground capitalize">
+                    {item.colors.join(", ")}
+                  </div>
                 </div>
               </div>
             ))}
-        <ConfirmDeleteDialog
-          isOpen={isDialogOpen}
-          onClose={closeDialog}
-          onConfirm={() => handleDelete(selectedItemId)}
-          itemDescription={
-            data.find((item) => item._id === selectedItemId)?.category
-          }
-        />
       </div>
+
+      <ConfirmDeleteDialog
+        isOpen={isDialogOpen}
+        onClose={closeDialog}
+        onConfirm={() => handleDelete(selectedItemId)}
+        itemDescription={
+          data.find((item) => item._id === selectedItemId)?.category
+        }
+      />
+
       {!loading && data.length === 0 && (
-        <div className="w-full h-full flex items-center flex-col justify-center ">
-          <h2 className="text-3xl text1 font-bold">Time to add something!</h2>
-          <Image
-            src="/empty.png"
-            alt="empty"
-            width={600}
-            height={600}
-            // className="w-full h-full"
-          />
+        <div className="w-full py-12 flex items-center flex-col justify-center text-center">
+          <h2 className="text-3xl font-bold mb-6">Time to add something!</h2>
+          <div className="max-w-md mx-auto mb-6">
+            <Image
+              src="/empty.png"
+              alt="empty"
+              width={400}
+              height={400}
+              className="mx-auto"
+            />
+          </div>
           <p className="text-foreground/70 font-semibold text-lg">
             No items added yet
           </p>
