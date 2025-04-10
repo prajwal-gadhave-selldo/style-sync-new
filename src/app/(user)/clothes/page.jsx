@@ -113,6 +113,9 @@ const ClothesPage = () => {
         clothes={data}
         loading={loading}
         onSelectItem={handleItemSelect}
+        onDeleteItem={handleDeleteItem}
+        email={email}
+        router={"clothes"}
       />
 
       {/* {showRecentlyAdded ? (

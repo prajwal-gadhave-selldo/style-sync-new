@@ -249,7 +249,7 @@ const ComplementaryOutfitForm = ({ selectedItem, allClothes, email }) => {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
         <div className="mb-5 flex flex-col gap-2 md:max-w-xl md:mx-auto">
           <label className="text-xl font-semibold">
-            I'm going to
+            I&apos;m going to
             <input
               type="text"
               autoComplete="off"
@@ -260,7 +260,7 @@ const ComplementaryOutfitForm = ({ selectedItem, allClothes, email }) => {
           </label>
           {errors.eventType && (
             <span className="text-red-500 text-sm">
-              Please tell us where you're going
+              Please tell us where you&apos;re going
             </span>
           )}
         </div>

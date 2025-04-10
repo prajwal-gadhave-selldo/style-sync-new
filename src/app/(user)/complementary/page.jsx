@@ -74,7 +74,7 @@ const ComplementaryOutfitPage = () => {
           <IoShirt className="w-10 h-10" />
           <div>
             <p className="text-2xl font-bold tracking-wider capitalize">
-              Explore Outfits
+              Generate Outfits
             </p>
             <p className="text-sm opacity-80">
               Discover curated outfit combinations tailored for you
@@ -92,6 +92,8 @@ const ComplementaryOutfitPage = () => {
             clothes={clothes}
             loading={loading}
             onSelectItem={handleItemSelect}
+            router={router}
+            email={email}
           />
         </div>
       ) : (
