@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { generateComplementaryOutfits } from "@/lib/openai";
+import { generateComplementaryOutfits as generateComplementaryOutfitsGroq } from "@/lib/groqai";
 import { useToast } from "@/components/ui/use-toast";
 import { CgSpinner } from "react-icons/cg";
 import { TiHeart } from "react-icons/ti";
 import LoadingFav from "./LoadingFav";
 
-const ComplementaryOutfitForm = ({ selectedItem, allClothes, email }) => {
+const ComplementaryOutfitForm = ({ selectedItem, allClothes, email, aiProvider }) => {
   const [suggestions, setSuggestions] = useState("");
   const [outfitsDisplay, setOutfitsDisplay] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,13 +48,21 @@ const ComplementaryOutfitForm = ({ selectedItem, allClothes, email }) => {
     }`;
 
     try {
-      const outfits = await generateComplementaryOutfits(
-        data.eventType,
-        selectedItemDesc,
-        selectedItem._id,
-        selectedItem.category,
-        clothingDescriptions
-      );
+      const outfits = aiProvider === 'openai'
+        ? await generateComplementaryOutfits(
+            data.eventType,
+            selectedItemDesc,
+            selectedItem._id,
+            selectedItem.category,
+            clothingDescriptions
+          )
+        : await generateComplementaryOutfitsGroq(
+            data.eventType,
+            selectedItemDesc,
+            selectedItem._id,
+            selectedItem.category,
+            clothingDescriptions
+          );
 
       setSuggestions(outfits);
     } catch (error) {

@@ -81,6 +81,7 @@ const CategoryItems = ({ data, onDelete, loading, email }) => {
                           }}
                         >
                           <Image
+                            priority={true}
                             src={item.photoUrl}
                             alt={item.category}
                             fill

@@ -1,33 +1,34 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { FiUpload } from 'react-icons/fi';
-import Image from 'next/image';
-import CreatableSelect from 'react-select/creatable';
-import Select from 'react-select';
-import { colors, createOption, groupedOptions, formatGroupLabel } from '@/lib';
-import { Button } from './ui/button';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
-import { useForm, Controller } from 'react-hook-form';
-import { CgSpinner } from 'react-icons/cg';
-import { fetchUserId, incrementCount } from '@/lib/fetchWeatherData';
-import { useAtom } from 'jotai';
-import { countAtom } from '@/lib/atomStore';
+"use client";
+import React, { useState, useEffect } from "react";
+import { FiUpload } from "react-icons/fi";
+import Image from "next/image";
+import CreatableSelect from "react-select/creatable";
+import Select from "react-select";
+import { colors, createOption, groupedOptions, formatGroupLabel } from "@/lib";
+import { Button } from "./ui/button";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm, Controller } from "react-hook-form";
+import { CgSpinner } from "react-icons/cg";
+import { fetchUserId, incrementCount } from "@/lib/fetchWeatherData";
+import { useAtom } from "jotai";
+import { countAtom } from "@/lib/atomStore";
 
 const UploadingForm = () => {
-  const [image, setImage] = useState('');
+  const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [imgUpload, setImgUpload] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState('');
+  const [uploadedImage, setUploadedImage] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState(colors);
   const [category, setCategory] = useState({});
-  const [photoUrl, setPhotoUrl] = useState('');
-  const [pattern, setPattern] = useState('');
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [pattern, setPattern] = useState("");
   const [value, setValue] = useState();
+  const [showImage, setShowImage] = useState(false);
 
   const [isToggled, setIsToggled] = useState(false);
   const [count, setCount] = useAtom(countAtom);
@@ -43,6 +44,13 @@ const UploadingForm = () => {
       checkUserSubscription();
     }
   }, [email]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowImage(true);
+    }, 2000); // 2 seconds delay
+
+    return () => clearTimeout(timer); // Cleanup timeout on unmount
+  }, [uploadedImage]);
 
   const {
     control,
@@ -51,7 +59,7 @@ const UploadingForm = () => {
   } = useForm({
     defaultValues: {
       colors: [],
-      category: '',
+      category: "",
     },
   });
 
@@ -61,11 +69,11 @@ const UploadingForm = () => {
 
     if (!user.isPro && user.count >= 20) {
       toast({
-        title: 'Upgrade to Pro',
-        description: 'Upgrade to pro to add more items',
-        variant: 'destructive',
+        title: "Upgrade to Pro",
+        description: "Upgrade to pro to add more items",
+        variant: "destructive",
       });
-      return router.push('/dashboard');
+      return router.push("/dashboard");
     }
   };
   const grabImage = async (event) => {
@@ -73,11 +81,11 @@ const UploadingForm = () => {
     setImgUpload(true);
     const file = imageInput.files[0];
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
     const response = await fetch(
       `https://api.imgbb.com/1/upload?expiration=60000&key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
       {
-        method: 'POST',
+        method: "POST",
         body: formData,
       }
     );
@@ -103,9 +111,9 @@ const UploadingForm = () => {
     const imageBlob = await imageResponse.blob();
 
     const dataForm = new FormData();
-    dataForm.append('file', file);
-    const s3Upload = await fetch('/api/uploadAWS', {
-      method: 'POST',
+    dataForm.append("file", file);
+    const s3Upload = await fetch("/api/uploadAWS", {
+      method: "POST",
       body: dataForm,
     });
 
@@ -143,16 +151,16 @@ const UploadingForm = () => {
     const formData = {
       category: category.value,
       colors: Array.isArray(value) ? value.map((opt) => opt.value) : [],
-      pattern: isToggled ? pattern : '',
+      pattern: isToggled ? pattern : "",
       photoUrl: photoUrl,
       email: email,
     };
 
     try {
-      const response = await fetch('/api/items', {
-        method: 'POST',
+      const response = await fetch("/api/items", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -162,32 +170,32 @@ const UploadingForm = () => {
         setCount(count + 1);
         setSaving(false);
         toast({
-          title: 'Item saved successfully',
-          description: 'Your item has been saved successfully.',
-          variant: 'success',
+          title: "Item saved successfully",
+          description: "Your item has been saved successfully.",
+          variant: "success",
           duration: 3000,
         });
 
         router.back();
       } else {
         toast({
-          title: 'Failed to save the item',
-          description: 'Please try again later.',
-          variant: 'destructive',
+          title: "Failed to save the item",
+          description: "Please try again later.",
+          variant: "destructive",
           duration: 3000,
         });
         setSaving(false);
-        console.error('Failed to save the item');
+        console.error("Failed to save the item");
         router.refresh();
       }
     } catch (error) {
       toast({
-        title: 'Failed to save the item',
-        description: 'Please try again later.',
-        variant: 'destructive',
+        title: "Failed to save the item",
+        description: "Please try again later.",
+        variant: "destructive",
         duration: 3000,
       });
-      console.error('Error submitting the form', error);
+      console.error("Error submitting the form", error);
     }
   };
 
@@ -251,16 +259,18 @@ const UploadingForm = () => {
             </div>
           ) : (
             <div className="flex flex-col w-full h-full">
-              <label>Removed Background</label>
+              <label>After fetching Metadata</label>
               <div className="w-full h-full flex -rotate-90 justify-center items-center ">
                 <div className="aspect-square w-full h-full relative rounded-md">
-                  <Image
-                    priority
-                    src={image}
-                    alt="clothes"
-                    fill
-                    className="object-cover rounded-sm"
-                  />
+                  {showImage && (
+                    <Image
+                      priority
+                      src={uploadedImage}
+                      alt="clothes"
+                      fill
+                      className="object-cover rounded-sm"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -277,7 +287,7 @@ const UploadingForm = () => {
                 <Controller
                   name="category"
                   control={control}
-                  rules={{ required: 'Category is required' }}
+                  rules={{ required: "Category is required" }}
                   render={({ field }) => (
                     <Select
                       {...field}
@@ -287,9 +297,9 @@ const UploadingForm = () => {
                         ...theme,
                         colors: {
                           ...theme.colors,
-                          primary25: '#f0f0f0',
-                          neutral5: '#fff',
-                          neutral90: '#f0f0f0',
+                          primary25: "#f0f0f0",
+                          neutral5: "#fff",
+                          neutral90: "#f0f0f0",
                         },
                       })}
                       className="text-gray-900"
@@ -309,7 +319,7 @@ const UploadingForm = () => {
                 <Controller
                   name="selectedOption"
                   control={control}
-                  rules={{ required: 'Please select at least one color' }}
+                  rules={{ required: "Please select at least one color" }}
                   render={({ field }) => (
                     <CreatableSelect
                       {...field}
@@ -322,8 +332,8 @@ const UploadingForm = () => {
                       className="text-gray-900"
                       onChange={(newValue, actionMeta) => {
                         if (
-                          actionMeta.action === 'remove-value' ||
-                          actionMeta.action === 'clear'
+                          actionMeta.action === "remove-value" ||
+                          actionMeta.action === "clear"
                         ) {
                           field.onChange(newValue || []);
                           setValue(newValue || []);
@@ -337,9 +347,9 @@ const UploadingForm = () => {
                         ...theme,
                         colors: {
                           ...theme.colors,
-                          primary25: '#f0f0f0',
-                          neutral5: '#fff',
-                          neutral90: '#f0f0f0',
+                          primary25: "#f0f0f0",
+                          neutral5: "#fff",
+                          neutral90: "#f0f0f0",
                         },
                       })}
                     />
@@ -371,7 +381,7 @@ const UploadingForm = () => {
                   <input
                     placeholder="Stripped lines on the bottom"
                     type="text"
-                    autoComplete={'off'}
+                    autoComplete={"off"}
                     className="w-full rounded-md p-2 bg-background border  border-popover-foreground"
                     onChange={(e) => setPattern(e.target.value)}
                   />
@@ -384,7 +394,7 @@ const UploadingForm = () => {
                   <CgSpinner className="animate-spin w-8 h-8" />
                 </div>
               ) : (
-                'Add Item'
+                "Add Item"
               )}
             </Button>
           </form>

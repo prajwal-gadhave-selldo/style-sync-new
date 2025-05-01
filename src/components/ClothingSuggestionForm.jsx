@@ -1,7 +1,8 @@
 "use client";
 
 import generateClothingSuggestions from "@/lib/openai";
-import { useState, useEffect } from "react";
+import generateClothingSuggestionsGroq from "@/lib/groqai";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "./ui/button";
 import { TiHeart } from "react-icons/ti";
@@ -9,8 +10,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "react-hook-form";
 import { CgSpinner } from "react-icons/cg";
 import LoadingFav from "./LoadingFav";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { FiCalendar, FiHeart as FiHeartIcon } from "react-icons/fi";
 
-const ClothingSuggestionForm = ({ clothes, weather }) => {
+const ClothingSuggestionForm = ({ clothes, weather, aiProvider }) => {
   const [eventType, setEventType] = useState("");
   const [mood, setMood] = useState("");
   const [suggestions, setSuggestions] = useState("");
@@ -18,12 +22,25 @@ const ClothingSuggestionForm = ({ clothes, weather }) => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [loadingRandomize, setLoadingRandomize] = useState(false);
   const [responseLoading, setResponseLoading] = useState(false);
+  const suggestionsRef = useRef(null);
 
   useEffect(() => {
     if (suggestions.length > 0) {
       getUserOutfit().then(setOutfitsDisplay);
     }
   }, [suggestions]);
+
+  useEffect(() => {
+    if (outfitsDisplay) {
+      // Add a small delay to ensure the content is rendered
+      setTimeout(() => {
+        suggestionsRef.current?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+    }
+  }, [outfitsDisplay]);
 
   const weatherTemp = weather?.current?.temp_c || "";
   const weatherCond = weather?.current?.condition?.text || "";
@@ -55,38 +72,77 @@ const ClothingSuggestionForm = ({ clothes, weather }) => {
   const onSubmit = async () => {
     setLoadingSuggestions(true);
     setResponseLoading(true);
-    const suggestions = await generateClothingSuggestions(
-      event,
-      feeling,
-      weatherTemp,
-      weatherCond,
-      clothingDescriptions,
-      wind,
-      true
-    );
+    try {
+      const suggestions = aiProvider === 'openai' 
+        ? await generateClothingSuggestions(
+            event,
+            feeling,
+            weatherTemp,
+            weatherCond,
+            clothingDescriptions,
+            wind,
+            true
+          )
+        : await generateClothingSuggestionsGroq(
+            event,
+            feeling,
+            weatherTemp,
+            weatherCond,
+            clothingDescriptions,
+            wind,
+            true
+          );
 
-    setSuggestions(suggestions);
-    console.log(suggestions);
-    setResponseLoading(false);
-    setLoadingSuggestions(false);
+      setSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      toast({
+        title: "Failed to generate suggestions",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setResponseLoading(false);
+      setLoadingSuggestions(false);
+    }
   };
 
   const handleRandomize = async () => {
     setLoadingRandomize(true);
     setResponseLoading(true);
-    const suggestions = await generateClothingSuggestions(
-      event,
-      feeling,
-      weatherTemp,
-      weatherCond,
-      clothingDescriptions,
-      wind,
-      false
-    );
+    try {
+      const suggestions = aiProvider === 'openai'
+        ? await generateClothingSuggestions(
+            event,
+            feeling,
+            weatherTemp,
+            weatherCond,
+            clothingDescriptions,
+            wind,
+            false
+          )
+        : await generateClothingSuggestionsGroq(
+            event,
+            feeling,
+            weatherTemp,
+            weatherCond,
+            clothingDescriptions,
+            wind,
+            false
+          );
 
-    setSuggestions(suggestions);
-    setResponseLoading(false);
-    setLoadingRandomize(false);
+      setSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error generating random suggestions:', error);
+      toast({
+        title: "Failed to generate random suggestions",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setResponseLoading(false);
+      setLoadingRandomize(false);
+    }
   };
 
   const handleLikeOutfit = (index, outfitItems, email) => {
@@ -239,100 +295,148 @@ const ClothingSuggestionForm = ({ clothes, weather }) => {
   };
 
   return (
-    <div className="mt-5">
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-        <div className="mb-5 flex flex-col gap-2 lg:flex-row md:max-w-4xl md:mx-auto">
-          <label className="text-xl font-semibold">
-            I&apos;m going to
-            <input
-              type="text"
-              autoComplete="off"
-              {...register("eventType", { required: true })}
-              className="bg-transparent h-4 w-44 md:w-60 border-b border-foreground focus:outline-none mx-2"
-            />
-            {errors.eventType && (
-              <p className="text-red-500 text-sm ml-32 hidden lg:block">
-                This field is required
-              </p>
-            )}
-          </label>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-8"
+    >
+      <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-2 border-primary/20 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(120,119,198,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-[gradient_8s_linear_infinite]" />
+        <CardContent className="p-8 relative z-10">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl blur-xl" />
+                <div className="relative p-6 rounded-2xl bg-background/50 backdrop-blur border border-primary/10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                      <FiCalendar className="w-6 h-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Event Type</h3>
+                  </div>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    {...register("eventType", { required: true })}
+                    className="w-full px-4 py-3 text-base bg-transparent border-b-2 border-primary/20 focus:border-primary focus:outline-none transition-colors duration-300"
+                    placeholder="Where are you going?"
+                  />
+                  {errors.eventType && (
+                    <p className="text-red-500 text-sm mt-2">
+                      Please tell us where you're going
+                    </p>
+                  )}
+                </div>
+              </motion.div>
 
-          {errors.eventType && (
-            <span className="text-red-500 text-sm ml-36 lg:hidden ">
-              This field is required
-            </span>
-          )}
-
-          <label className="text-xl font-semibold">
-            I&apos;m feeling
-            <input
-              type="text"
-              autoComplete="off"
-              {...register("mood", { required: true })}
-              className="bg-transparent h-4 w-48 md:w-60 border-b border-foreground focus:outline-none mx-2"
-            />
-            {errors.mood && (
-              <p className="text-red-500 text-sm ml-32 hidden lg:block">
-                This field is required
-              </p>
-            )}
-          </label>
-          {errors.mood && (
-            <span className="text-red-500 text-sm ml-36 lg:hidden ">
-              This field is required
-            </span>
-          )}
-        </div>
-
-        <Button
-          type="submit"
-          disabled={loadingRandomize || loadingSuggestions}
-          className={`text-xl font-semibold mt-5 max-w-xl w-full mx-auto ${
-            loadingRandomize || loadingSuggestions === true
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-        >
-          {loadingSuggestions ? (
-            <div className="flex items-center justify-center gap-2">
-              <CgSpinner className="animate-spin w-8 h-8" />
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl blur-xl" />
+                <div className="relative p-6 rounded-2xl bg-background/50 backdrop-blur border border-primary/10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                      <FiHeartIcon className="w-6 h-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Mood & Style</h3>
+                  </div>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    {...register("mood", { required: true })}
+                    className="w-full px-4 py-3 text-base bg-transparent border-b-2 border-primary/20 focus:border-primary focus:outline-none transition-colors duration-300"
+                    placeholder="How are you feeling?"
+                  />
+                  {errors.mood && (
+                    <p className="text-red-500 text-sm mt-2">
+                      Please tell us how you're feeling
+                    </p>
+                  )}
+                </div>
+              </motion.div>
             </div>
-          ) : (
-            "Get Suggestions"
-          )}
-        </Button>
-      </form>
 
-      <div className="mt-5 flex flex-col items-center">
-        <div className="flex items-center gap-2 w-full md:max-w-xl md:mx-auto">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <p className="text-lg font-base px-2">or</p>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-        <Button
-          onClick={handleRandomize}
-          disabled={loadingRandomize || loadingSuggestions}
-          className={`text-xl font-semibold mt-5 max-w-xl w-full mx-auto ${
-            loadingRandomize || loadingSuggestions === true
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-        >
-          {loadingRandomize ? (
-            <div className="flex items-center justify-center gap-2">
-              <CgSpinner className="animate-spin w-8 h-8" />
+            <div className="flex flex-col items-center gap-6">
+              <Button
+                type="submit"
+                disabled={loadingRandomize || loadingSuggestions}
+                className="w-full max-w-md h-14 text-lg bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 transition-all duration-300 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-[gradient_8s_linear_infinite]" />
+                {loadingSuggestions ? (
+                  <div className="flex items-center justify-center gap-2 relative z-10">
+                    <CgSpinner className="animate-spin w-6 h-6" />
+                    <span>Generating Suggestions...</span>
+                  </div>
+                ) : (
+                  <span className="relative z-10">Get Suggestions</span>
+                )}
+              </Button>
+
+              <div className="flex items-center gap-4 w-full max-w-md">
+                <div className="flex-grow border-t border-primary/20"></div>
+                <span className="text-muted-foreground">or</span>
+                <div className="flex-grow border-t border-primary/20"></div>
+              </div>
+
+              <Button
+                onClick={handleRandomize}
+                disabled={loadingRandomize || loadingSuggestions}
+                className="w-full max-w-md h-14 text-lg bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 hover:from-primary/50 hover:via-primary/40 hover:to-primary/30 border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 relative overflow-hidden group backdrop-blur-sm"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent group-hover:via-primary/10 transition-all duration-300" />
+                {loadingRandomize ? (
+                  <div className="flex items-center justify-center gap-2 relative z-10">
+                    <CgSpinner className="animate-spin w-6 h-6" />
+                    <span>Randomizing...</span>
+                  </div>
+                ) : (
+                  <span className="relative z-10">Randomize</span>
+                )}
+              </Button>
             </div>
-          ) : (
-            "Randomize"
-          )}
-        </Button>
-      </div>
-      {responseLoading &&
-        Array(8)
-          .fill()
-          .map((_, index) => <LoadingFav key={index} />)}
-      {outfitsDisplay}
-    </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <AnimatePresence>
+        {responseLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {Array(6)
+              .fill()
+              .map((_, index) => (
+                <LoadingFav key={index} />
+              ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {outfitsDisplay && (
+        <motion.div
+          ref={suggestionsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8"
+        >
+          {outfitsDisplay}
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 

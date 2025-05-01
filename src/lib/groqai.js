@@ -1,15 +1,10 @@
-"use server";
+"use server"
 
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-const openaiApiKey = process.env.OPEN_AI_API_KEY;
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const openai = new OpenAI({
-  apiKey: openaiApiKey,
-  dangerouslyAllowBrowser: true,
-});
-
-const generateClothingSuggestions = async (
+export const generateClothingSuggestions = async (
   event,
   feeling,
   weatherTemp,
@@ -23,8 +18,8 @@ const generateClothingSuggestions = async (
   }, feeling ${
     includeEventAndMood ? feeling : ""
   }. Each outfit should include one top (like a shirt or blouse), one bottom (like pants or a skirt), and a pair of shoes. Additional accessories or layers can be suggested based on the weather conditions: ${weatherCond}, wind speed of ${wind} km/h, and temperature of ${weatherTemp}°C. Cold temperatures range from -20° to 0°, cooler weather ranges from 0° to 20°, and warm weather ranges from 20° to 40°. Each outfit should be presented in order from top to bottom, followed by the exact product IDs with no spaces before or after each outfit. Ensure that all items used come from the provided list, without inventing new items or colors. Additionally, assign a catchy three-word name to each outfit. Finally, provide an accuracy rating with name (Accuracy Rating) for each outfit, representing how well it fits the given weather, event, and mood, on a scale of 0 to 100% (rating should be in different numbers not like round figures (eg: 72%, 85%, etc)) in format like
-    Accuracy Rating: 70% (description)
-    
+    Accuracy Rating: 70% (description). I don't want any extra text or anything else just only in this format given below.
+
     Entire Example:
     Outfit 1: "Beach Breeze"
     Top: aliceblue collaredshirt (21c909)
@@ -48,16 +43,21 @@ const generateClothingSuggestions = async (
     Accuracy Rating: 70% (may be too warm for hot weather, but suitable for semi-formal events)
     .`;
 
-  const response = await openai.completions.create({
-    model: "gpt-3.5-turbo-instruct",
-    prompt,
-    max_tokens: 1000,
+  const response = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
     temperature: 0.1,
+    max_tokens: 1000,
   });
 
-  return response.choices[0].text;
+  console.log(response.choices[0].message.content);
+  return response.choices[0].message.content;
 };
-
 
 export const generateComplementaryOutfits = async (
   event,
@@ -88,14 +88,20 @@ Accuracy Rating: 87% (excellent color coordination and professional look)
 Outfit 2: ...
 `;
 
-  const response = await openai.completions.create({
-    model: "gpt-3.5-turbo-instruct",
-    prompt,
-    max_tokens: 1000,
+  const response = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
     temperature: 0.2,
+    max_tokens: 1000,
   });
 
-  return response.choices[0].text;
+  console.log(response.choices[0].message.content);
+  return response.choices[0].message.content;
 };
 
 export default generateClothingSuggestions;
