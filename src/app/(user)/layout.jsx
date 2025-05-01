@@ -37,18 +37,17 @@ export default function RootLayout({ children }) {
             attribute="class"
             defaultTheme="light"
             enableSystem={false}
-            
           >
-            
+
             <main className="flex h-screen ">
               <Providers >
               <DashboardNav />
-              <div className="w-full ml-10 mr-4 my-1 overflow-auto scrollbar-hide">
+              <div className="w-full mr-4 my-1 overflow-auto scrollbar-hide">
                 {children}
               </div>
               </Providers>
             </main>
-            
+
             <Toaster />
           </ThemeProvider>
         </body>
