@@ -173,7 +173,7 @@ const ViewFavorite = () => {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-[gradient_8s_linear_infinite]" />
                 <p className="text-center text-lg font-semibold text-background relative z-10">
-                  Let's create outfits
+                  Let&apos;s create outfits
                 </p>
               </Link>
             </motion.div>

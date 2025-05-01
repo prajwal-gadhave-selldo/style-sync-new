@@ -28,7 +28,7 @@ const WeatherWidget = ({ location, weather }) => {
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">Weather in {location.name}, {location.region}, {location.country}</h2>
             <p className="text-muted-foreground">
-              Perfect your outfit for today's weather
+              Perfect your outfit for today&apos;s weather
             </p>
           </div>
           <div className="w-full flex items-center justify-center gap-6 mt-4 md:mt-0 md:w-auto">

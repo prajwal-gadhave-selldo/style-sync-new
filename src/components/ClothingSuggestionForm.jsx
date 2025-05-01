@@ -329,7 +329,7 @@ const ClothingSuggestionForm = ({ clothes, weather, aiProvider }) => {
                   />
                   {errors.eventType && (
                     <p className="text-red-500 text-sm mt-2">
-                      Please tell us where you're going
+                      Please tell us where you&apos;re going
                     </p>
                   )}
                 </div>
@@ -357,7 +357,7 @@ const ClothingSuggestionForm = ({ clothes, weather, aiProvider }) => {
                   />
                   {errors.mood && (
                     <p className="text-red-500 text-sm mt-2">
-                      Please tell us how you're feeling
+                      Please tell us how you&apos;re feeling
                     </p>
                   )}
                 </div>
