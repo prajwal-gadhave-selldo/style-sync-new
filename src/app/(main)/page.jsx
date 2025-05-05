@@ -9,20 +9,19 @@ import Review from "@/components/Review";
 import Showcase from "@/components/Showcase";
 import Usage from "@/components/Usage";
 
-
 // https://dribbble.com/shots/23851706-Talkee-SaaS-Product-Website-Design
 
 export default function Home() {
   return (
-    <main className="">
+    <main className="bg-background">
       {/* <h2 className="text-3xl text1 ">StyleSync</h2> */}
       <Hero />
-      <Companies />
+      {/* <Companies /> */}
       <Usage />
-      <Showcase />
+      {/* <Showcase /> */}
       <DeepDive />
       <BentoBox />
-      <Review />
+      {/* <Review /> */}
       <PricingCards />
       <FAQ />
       <Footer />

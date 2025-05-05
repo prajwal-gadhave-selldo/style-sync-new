@@ -1,68 +1,89 @@
+"use client";
+
+import React from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "./ui/accordion";
+import { motion } from "framer-motion";
 
 const FrequentlyAskedQuestions = () => {
+  const questions = [
+    {
+      id: 1,
+      question: "What subscription plans do you offer?",
+      answer:
+        "We offer a free plan and a pro plan. The pro plan includes all features and personalized recommendations for $10/month.",
+    },
+    {
+      id: 2,
+      question: "Can I change my plan later?",
+      answer:
+        "Yes, you can upgrade or downgrade your plan at any time. The changes will be applied to your next billing cycle.",
+    },
+    {
+      id: 3,
+      question: "Why should I upgrade to the pro plan?",
+      answer:
+        "The pro plan gives you access to advanced features like AI-powered outfit recommendations, unlimited clothing uploads, and priority support.",
+    },
+    {
+      id: 4,
+      question: "What is included in the free plan?",
+      answer:
+        "The free plan includes basic closet organization, limited outfit creation, and community access with some restrictions on uploads and features.",
+    },
+    {
+      id: 5,
+      question: "How do I cancel my subscription?",
+      answer:
+        "You can cancel your subscription at any time from your account settings. Your access will continue until the end of your current billing period.",
+    },
+    {
+      id: 6,
+      question: "What happens to my uploads if I cancel?",
+      answer:
+        "If you cancel your pro subscription, you'll still have access to your uploads but with the limitations of the free plan.",
+    },
+  ];
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+      },
+    }),
+  };
+
   return (
-    <Accordion type="single" collapsible className="w-full text-start">
-      <AccordionItem value="faq-1">
-        <AccordionTrigger>
-          What subscription plans are available?
-        </AccordionTrigger>
-        <AccordionContent>
-          We offer a variety of plans, including monthly and a free plan
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="faq-2">
-        <AccordionTrigger className="text-start">
-          Can I change my subscription plan later?
-        </AccordionTrigger>
-        <AccordionContent>
-          Yes, you can upgrade or downgrade your subscription plan at any time
-          through your account settings.
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="faq-3">
-        <AccordionTrigger>Why should I upgrade?</AccordionTrigger>
-        <AccordionContent>
-          Upgrading to a paid plan offers you a greater number of features and
-          unlimited uploads, meaning suggested outfits will be much better.
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="faq-4">
-        <AccordionTrigger className="text-start">
-          What is included in the free subscription plan?
-        </AccordionTrigger>
-        <AccordionContent>
-          The free plan includes access to basic features with limited usage.
-          For unlimited access, consider upgrading to a premium plan.
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="faq-5">
-        <AccordionTrigger>How do I cancel my subscription?</AccordionTrigger>
-        <AccordionContent>
-          You can cancel your subscription at any time by going to your account
-          settings and selecting &apos;Manage Subscription&apos;.Your Pro
-          membership will be active until the end of the subscription period.
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="faq-6">
-        <AccordionTrigger className="text-start">
-          If I cancel my subscription, will I loose my uploads?{" "}
-        </AccordionTrigger>
-        <AccordionContent>
-          Your uploaded items will be kept but you wont be able to upload more
-          unless some are deleted.
-        </AccordionContent>
-      </AccordionItem>
+    <Accordion type="single" collapsible className="w-full">
+      {questions.map((item, index) => (
+        <motion.div
+          key={item.id}
+          custom={index}
+          initial="hidden"
+          animate="visible"
+          variants={itemVariants}
+        >
+          <AccordionItem
+            value={`item-${item.id}`}
+            className="border-b border-border"
+          >
+            <AccordionTrigger className="hover:text-primary font-medium text-left transition-all">
+              {item.question}
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground">
+              {item.answer}
+            </AccordionContent>
+          </AccordionItem>
+        </motion.div>
+      ))}
     </Accordion>
   );
 };

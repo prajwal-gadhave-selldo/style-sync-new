@@ -30,7 +30,9 @@ export default function RootLayout({ children }) {
   return (
     <SessionWrapper>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${josefsans.variable} ${prompt.className}`}>
+        <body
+          className={`${josefsans.variable} ${prompt.className} overflow-x-hidden`}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

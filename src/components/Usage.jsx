@@ -1,57 +1,149 @@
-import React from "react";
+"use client";
+
+import React, { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { AlignRight, Calendar, Save, ArrowRight } from "lucide-react";
 
 const Usage = () => {
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const [activeStep, setActiveStep] = useState(null);
+
+  const steps = [
+    {
+      id: 1,
+      title: "Upload your clothes",
+      description:
+        "Our smart bot will crop the background out and you tag the items by category or colors",
+      image: "/upload.png",
+      color: "bg-[#8b5cf6]",
+      icon: AlignRight,
+    },
+    {
+      id: 2,
+      title: "Choose your style",
+      description:
+        "We can help you create your perfect outfit by getting your local weather and where you are going",
+      image: "/find.png",
+      color: "bg-[#0ea5e9]",
+      icon: Calendar,
+    },
+    {
+      id: 3,
+      title: "Save your favorite",
+      description:
+        "StyleSync will purpose 3 outfits to choose from, which you will be able to save to your profile",
+      image: "/choose.png",
+      color: "bg-[#f59e0b]",
+      icon: Save,
+    },
+  ];
+
   return (
-    <section className="w-full h-1/2 ">
-      <div className="flex flex-col items-center justify-center p-5">
-        <h2 className="text-3xl md:text-5xl font-bold my-5">How it works</h2>
-        <p className="text-lg text-center -mt-5 md:mt-0 md:px-40">
-          StyleSync helps you create your perfect outfit,based on your clothes
-          we are able to find your perfect outfit
-        </p>
-      </div>
-      <div className="flex flex-col items-center md:items-start md:flex-row md:justify-between p-2 md:p-5 ">
-        <div className="flex flex-col items-center w-full  md:w-1/3 md:h-1/3 mx-5 relative">
-          <img src="/upload.png" alt="upload" className="w-60 h-60 " />
-          <h4 className="text-center text-xl font-semibold mb-2">
-            Upload your clothes
-          </h4>
-          <p className="text-center px-5">
-            Our smart bot will crop the background out and you tag the items by
-            category or colors
-          </p>
-          <div className="absolute w-40 h-40 z-[5px] -right-[6rem] -top-[1rem] rotate-180 hidden md:block ">
-            <img
-              src="/arrow.svg"
-              alt="arrow"
-              className="w-full h-full scale-x-[-1]"
-            />
-          </div>
+    <section
+      ref={sectionRef}
+      className="relative pb-10 overflow-hidden"
+    >
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="text-center mb-16">
+          <motion.h2
+            className="text-4xl md:text-5xl font-bold mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            How it works
+          </motion.h2>
+
+          <motion.p
+            className="max-w-2xl mx-auto text-lg text-foreground/70"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            StyleSync helps you create your perfect outfit, based on your
+            clothes we are able to find your perfect outfit
+          </motion.p>
         </div>
 
-        <div className="flex flex-col items-center w-full  md:w-1/3 md:h-1/3 mx-5 relative p-2 md:p-0">
-          <img src="/find.png" alt="find" className="w-60 h-60 " />
-          <h4 className="text-center text-xl font-semibold mb-2">
-            Choose your style
-          </h4>
-          <p className="text-center px-5">
-            We can help you create your perfect outfit by getting your local
-            weather and where you are going
-          </p>
-          <div className="absolute w-40 h-40 z-[5px] -right-[6rem] top-[2rem] hidden md:block">
-            <img src="/arrow.svg" alt="arrow" className="w-full h-full " />
-          </div>
-        </div>
+        {/* Cards grid with visible arrow connectors */}
+        <div className="relative max-w-6xl mx-auto">
+          {/* Steps row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-16 relative">
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.id}
+                className="relative"
+                initial={{ opacity: 0, y: 50 }}
+                animate={
+                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
+                }
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2 + index * 0.2,
+                }}
+                onHoverStart={() => setActiveStep(step.id)}
+                onHoverEnd={() => setActiveStep(null)}
+              >
+                {/* Card */}
+                <motion.div
+                  className="bg-white dark:bg-card rounded-2xl overflow-hidden shadow-lg h-full border border-border"
+                  whileHover={{
+                    scale: 1.03,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20,
+                  }}
+                >
+                  {/* Card top with image */}
+                  <div
+                    className={`h-48 md:h-52 relative overflow-hidden ${step.color}`}
+                  >
+                    {/* Icon in top left */}
+                    <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md p-2 rounded-lg">
+                      <step.icon className="w-5 h-5 text-white" />
+                    </div>
 
-        <div className="flex flex-col items-center w-full md:w-1/3 md:h-1/3 mx-5 p-2 md:p-0">
-          <img src="/choose.png" alt="choose" className="w-60 h-60 " />
-          <h4 className="text-center text-xl font-semibold mb-2">
-            Save your favorite
-          </h4>
-          <p className="text-center px-5">
-            StyleSync will purpose 3 outfits to choose from, which you will be
-            able to save to your profile
-          </p>
+                    {/* Main image centered */}
+                    <div className="absolute inset-0 flex items-center justify-center p-6">
+                      <img
+                        src={step.image}
+                        alt={step.title}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Card content */}
+                  <div className="p-6 relative">
+                    <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </div>
+                </motion.div>
+
+                {/* Visible arrow for connected steps */}
+                {index < steps.length - 1 && (
+                  <div className="absolute top-1/2 -right-14 transform -translate-y-1/2 z-20 hidden md:flex items-center justify-center">
+                    <div className="bg-white p-3 rounded-full shadow-md">
+                      <ArrowRight className="w-5 h-5 text-gray-500" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step number */}
+                <motion.div
+                  className={`absolute -bottom-4 -right-4 w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold text-white z-20 ${step.color}`}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4 + index * 0.1, type: "spring" }}
+                >
+                  {step.id}
+                </motion.div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

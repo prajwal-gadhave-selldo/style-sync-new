@@ -138,7 +138,7 @@ const ItemSelector = ({
                       <div className="absolute top-0 left-0 right-0 flex justify-between p-2 z-10">
                         <button
                           onClick={(e) => handleRotate(e, item)}
-                          className="p-2 rounded-full bg-white/80 hover:bg-white shadow-sm flex items-center gap-1 text-sm transition-all"
+                          className="p-2 rounded-full bg-white/80 hover:bg-white shadow-sm flex items-center gap-1 text-sm transition-all dark:text-gray-700"
                         >
                           <RxRotateCounterClockwise />
                           <span className="hidden md:group-hover:inline">
